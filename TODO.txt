@@ -1,0 +1,56 @@
+Here is the project to do list:
+-> Clean up
+1- Remove unused includes
+2- Remove unused variables
+3- Make a modifier header file for all the simulation modifiers
+4- Unify the variable names (snake or camel case)
+
+-> Things to Fix
+------------------------------------------------------
+5- get the text to show up on the window
+------------------------------------------------------
+IDK where to start yet
+------------------------------------------------------
+6- get the timestamp from <chrono>
+------------------------------------------------------
+std::string getCurrentTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+    
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm* now_tm = std::localtime(&now_c);
+    
+    char buffer[32];
+    strftime(buffer, sizeof(buffer), "%F %T", now_tm);
+    
+    // Add milliseconds
+    auto ms = now_ms.time_since_epoch().count() % 1000;
+    sprintf(buffer + 19, ".%03d", static_cast<int>(ms)); 
+    
+    return buffer; // "2023-10-05 14:30:15.427"
+}
+------------------------------------------------------
+7- Function for shader compilation error handling
+------------------------------------------------------
+GLint success;
+glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+if (!success) {
+    char infoLog[512];
+    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    std::cerr << "Vertex shader error:\n" << infoLog << std::endl;
+}
+------------------------------------------------------
+-> Things to Add
+------------------------------------------------------
+8- Restructure the classes so that you can have a
+(Difference between a particle and a point mass is that a particle has geometry)
+    - point 
+    - particle
+note: we are still in 2D
+I will need a bass class for the particle and point
+------------------------------------------------------
+9- Add the mass of the particles to the particle class
+------------------------------------------------------
+10- Add gravity insted of the gravitational acceleration
+------------------------------------------------------
+11- add a fixed attribute so that a object can be fixed in space
