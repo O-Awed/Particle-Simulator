@@ -1,13 +1,16 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <cmath>
-#include <glm/gtc/matrix_transform.hpp> // For glm::ortho
-#include <glm/gtc/type_ptr.hpp>         // For glm::value_ptr>
+
+#include <glm/gtc/matrix_transform.hpp> // For glm::ortho for text
+#include <glm/gtc/type_ptr.hpp>         // For glm::value_ptr> for text
+
 #include "prt.h"
 #include "const.h"
 #include "text_render.h"
@@ -19,7 +22,7 @@ const char* vertexShaderSource = "#version 330 core\n"
 "uniform vec2 uOffset;\n"
 "uniform float uScale;\n"
 "uniform float uAspect;\n"
-"uniform mat4 uProjection;\n"
+"uniform mat4 uProjection;\n" //idk what is the projection but it has something to do with text
 "void main()\n"
 "{\n"
 "   if (uMode == 0) {\n" // Circle mode
@@ -65,12 +68,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-
-    /*extern "C" {
-        __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-    }*/
-    
-
+  
     GLFWwindow* window = glfwCreateWindow(800, 800, "Particle Generator", nullptr, nullptr);
     if (!window) {
         std::cout << "Failed to create GLFW window\n";
@@ -88,29 +86,23 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Create Vertex Shader Object and get its reference
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    // Attach Vertex Shader source to the Vertex Shader Object
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    // Compile the Vertex Shader into machine code
-    glCompileShader(vertexShader);
+    // Vertex Shader Object
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);     // Creating the shader object
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); // Attaching the shader source
+    glCompileShader(vertexShader);                              // Compiling the shader object
 
-    // Create Fragment Shader Object and get its reference
+    // Fragment Shader Object
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    // Attach Fragment Shader source to the Fragment Shader Object
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    // Compile the Vertex Shader into machine code
     glCompileShader(fragmentShader);
 
-    // Create Shader Program Object and get its reference
-    GLuint shaderProgram = glCreateProgram();
-    // Attach the Vertex and Fragment Shaders to the Shader Program
-    glAttachShader(shaderProgram, vertexShader);
+    // Shader Program Object
+    GLuint shaderProgram = glCreateProgram();       // Creating shader program object 
+    glAttachShader(shaderProgram, vertexShader);    // Attaching the shaders objects
     glAttachShader(shaderProgram, fragmentShader);
-    // Wrap-up/Link all the shaders together into the Shader Program
-    glLinkProgram(shaderProgram);
+    glLinkProgram(shaderProgram);                   // Linking the shaders
 
-    // Delete the now useless Vertex and Fragment Shader objects
+    // Delete Vertex and Fragment Shader objects
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
@@ -137,7 +129,6 @@ int main() {
 
     // Create a single particle
     Particle ball(glm::vec2(0.0f, startY), 0.07f);
-    float floorY = -0.95f;
 
 	// Line VAO/VBO
     float lineVertices[] = {
@@ -244,7 +235,7 @@ int main() {
         glBindVertexArray(lineVAO);
         glDrawArrays(GL_LINES, 0, 2);
         
-        // Text test
+        // Text test (not working)
         
         // ===============================
         // 1. Generate text vertex buffer

@@ -7,7 +7,7 @@ private:
     glm::vec2 velocity;
     glm::vec2 acceleration;
     float radius;
-    float restitution;  // Energy conservation factor
+    float restitution;
 
 public:
     Particle(glm::vec2 startPosition, float startRadius, float rest = 0.95f);

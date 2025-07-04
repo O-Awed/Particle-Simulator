@@ -6,7 +6,7 @@ Particle::Particle(glm::vec2 startPosition, float startRadius, float restitution
     radius(startRadius), restitution(1.0f) {
 }
 
-void Particle::update(float dt, float floorY) {
+void Particle::update(float dt, float floorY) {  // dt --> fixedDeltaTime
     glm::vec2 initialPos = position;
     glm::vec2 initialVel = velocity;
 
@@ -25,9 +25,8 @@ void Particle::update(float dt, float floorY) {
         float t_hit = dt;
 
         if (discriminant >= 0) {
-            float sqrtD = sqrt(discriminant);
-            t_hit = (-b - sqrtD) / (2 * a); // First collision time
-            t_hit = fmax(0.0f, fmin(t_hit, dt));
+            t_hit = (-b - sqrt(discriminant)) / (2 * a); // First collision time
+            t_hit = fmax(0.0f, fmin(t_hit, dt));  // I don't know what this line does 
         }
 
         // Update to collision point
