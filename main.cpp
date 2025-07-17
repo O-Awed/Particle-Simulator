@@ -15,23 +15,22 @@
 #include "const.h"
 #include "text_render.h"
 
-// --------- Vertix shader source ---------
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec2 aPos;\n"
 "uniform int uMode;\n"
 "uniform vec2 uOffset;\n"
 "uniform float uScale;\n"
 "uniform float uAspect;\n"
-"uniform mat4 uProjection;\n" //idk what is the projection but it has something to do with text
+"uniform mat4 uProjection;\n"
 "void main()\n"
 "{\n"
-"   if (uMode == 0) {\n" // Circle mode
+"   if (uMode == 0) {\n"
 "       gl_Position = vec4((aPos.x * uScale + uOffset.x) / uAspect, aPos.y * uScale + uOffset.y, 0.0, 1.0);\n"
-"   } else if (uMode == 1) {\n" // Line mode
+"   } else if (uMode == 1) {\n"
 "       gl_Position = vec4(aPos.x * uScale + uOffset.x, aPos.y * uScale + uOffset.y, 0.0, 1.0);\n"
-"   } else if (uMode == 2) {\n" // Text mode 
-"       gl_Position = uProjection * vec4(aPos + uOffset, 0.0, 1.0);\n"
-"}\n"
+"   } else if (uMode == 2) {\n"
+"       gl_Position = uProjection * vec4(aPos, 0.0, 1.0);\n"
+"   }\n"
 "}\0";
 
 // --------- Fragment shader source ---------
@@ -204,6 +203,7 @@ int main() {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         float aspect = (float)width / (float)height;
+        glUseProgram(shaderProgram);
         glUniform1f(glGetUniformLocation(shaderProgram, "uAspect"), aspect);
 
         /*
@@ -241,18 +241,45 @@ int main() {
         // 1. Generate text vertex buffer
         // ===============================
         static char textVertexBuffer[99999];  // Allocated once, reused
+        static char triangleVertexBuffer[99999 * 2];  // For triangles
         int num_quads = stb_easy_font_print(0, 0, (char*)"Hello, text!", NULL, textVertexBuffer, sizeof(textVertexBuffer));
+
+        const int FLOATS_PER_VERTEX = 2;
+        const int BYTES_PER_VERTEX = 8; // just x,y
+        float* src = (float*)textVertexBuffer;
+        float* dst = (float*)triangleVertexBuffer;
+
+        for (int i = 0; i < num_quads; ++i) {
+            float* v0 = src + (i * 4 + 0) * FLOATS_PER_VERTEX;
+            float* v1 = src + (i * 4 + 1) * FLOATS_PER_VERTEX;
+            float* v2 = src + (i * 4 + 2) * FLOATS_PER_VERTEX;
+            float* v3 = src + (i * 4 + 3) * FLOATS_PER_VERTEX;
+
+            // Triangle 1: v0, v1, v2
+            memcpy(dst, v0, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+            memcpy(dst, v1, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+            memcpy(dst, v2, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+
+            // Triangle 2: v0, v2, v3
+            memcpy(dst, v0, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+            memcpy(dst, v2, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+            memcpy(dst, v3, BYTES_PER_VERTEX); dst += FLOATS_PER_VERTEX;
+        }
+
 
         // ===============================
         // 2. Upload vertices to GPU
         // ===============================
+        glBindVertexArray(textVAO);   // ADD THIS
         glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, num_quads * 4 * 16, textVertexBuffer);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, num_quads * 6 * 8, triangleVertexBuffer);
+
 
         // ===============================
         // 3. Setup orthographic projection
         // ===============================
         glm::mat4 projection = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+
 
         // ===============================
         // 4. Use your shader
@@ -260,17 +287,16 @@ int main() {
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniform1i(glGetUniformLocation(shaderProgram, "uMode"), 2);
-        glUniform2f(glGetUniformLocation(shaderProgram, "uOffset"), 50.0f, 50.0f);
         glUniform4f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f, 1.0f);
+        glUniform1f(glGetUniformLocation(shaderProgram, "uAspect"), 1.0f);  // Set aspect for consistency
+
 
         // ===============================
         // 5. Draw
         // ===============================
         glBindVertexArray(textVAO);
-        glDrawArrays(GL_QUADS, 0, num_quads * 4);
+        glDrawArrays(GL_TRIANGLES, 0, num_quads * 6);
         glBindVertexArray(0);
-
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();
