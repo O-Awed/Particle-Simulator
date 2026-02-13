@@ -36,4 +36,7 @@
   <ItemGroup>
     <Text Include="TODO.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Dockerfile" />
+  </ItemGroup>
 </Project>

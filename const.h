@@ -8,7 +8,7 @@ constexpr float egrav = -9.80665f;
 // Start position
 constexpr float startY = 0.33f;
 
-// Floor position
+// Floor position 
 constexpr float floorY = -0.95f;
 
 

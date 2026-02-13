@@ -3,7 +3,7 @@
 
 Particle::Particle(glm::vec2 startPosition, float startRadius, float restitution)
     : position(startPosition), velocity(glm::vec2(0.0f, 0.0f)), acceleration(0.0f, egrav),
-    radius(startRadius), restitution(1.0f) {
+    radius(startRadius), restitution(0.95f) {
 }
 
 void Particle::update(float dt, float floorY) {  // dt --> fixedDeltaTime
