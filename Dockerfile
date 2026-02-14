@@ -1,33 +1,33 @@
-# 1. Use Ubuntu as the starting point
+# 1. Use Ubuntu 22.04
 FROM ubuntu:22.04
 
-# 2. Avoid prompts from apt during installation
+# 2. Avoid prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 3. Install C++ compilers, CMake, and common OpenGL libraries
-# (I included the most common ones: GLFW, GLEW, GLUT, GLM. 
-#  Docker will just ignore the ones you don't use.)
+# 3. Install specific dependencies matching your main.cpp
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
-    libgl1-mesa-dev \
-    libglu1-mesa-dev \
-    freeglut3-dev \
+    python3-pip \
     libglfw3-dev \
-    libglew-dev \
     libglm-dev \
+    libgl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Set the working directory inside the container
+# 4. Install the GLAD generator
+RUN pip3 install glad
+
+# 5. Set working directory
 WORKDIR /app
 
-# 5. Copy your source code from your computer into the container
+# 6. Generate GLAD files
+RUN glad --generator=c --api="gl=3.3" --profile=compatibility --out-path=glad
+
+# 7. Copy your source code
 COPY . /app
 
-# 6. Compile the code 
-# Note: You might need to change 'main.cpp' to your actual filename.
-# This is a generic compilation command for OpenGL.
-RUN g++ -o particle_sim *.cpp -lGL -lGLU -lglut -lGLEW -lglfw
+# 8. Compile the code
+RUN g++ -o particle_sim *.cpp glad/src/glad.c -I./glad/include -lglfw -lGL -ldl
 
-# 7. The command to run when the container starts
+# 9. Run
 CMD ["./particle_sim"]
